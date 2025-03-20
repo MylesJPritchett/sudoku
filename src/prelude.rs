@@ -8,4 +8,5 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub struct W<T>(pub T);
 
 pub use crate::puzzle::import::*;
+pub use crate::puzzle::solve::*;
 pub use crate::puzzle::*;

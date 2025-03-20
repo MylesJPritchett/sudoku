@@ -3,6 +3,7 @@ use rand::prelude::IndexedRandom;
 use rand::seq::SliceRandom;
 
 pub mod import;
+pub mod solve;
 
 #[derive(Clone)]
 pub enum Difficulty {
@@ -36,6 +37,11 @@ impl Puzzle {
     pub fn print(&self) {
         println!("Puzzle: {}", self.name);
         self.board.print();
+    }
+
+    pub fn solve(&mut self) {
+        println!("Solving with Bruteforce");
+        self.board.brute_force();
     }
 }
 
@@ -81,4 +87,12 @@ pub fn pick_random_puzzle(filename: &str) -> Result<Puzzle> {
         .choose(&mut rng)
         .cloned()
         .ok_or_else(|| Error::Generic("Failed to randomly select a puzzle".to_string()))
+}
+
+pub fn pick_worst_backtracking(filename: &str) -> Result<Puzzle> {
+    let puzzles = read_sudoku_puzzles(filename)?;
+    puzzles
+        .into_iter()
+        .find(|p| p.name == "Worst Case Backtrack")
+        .ok_or_else(|| Error::Generic("Worst Case Backtrack puzzle not found".to_string()))
 }

@@ -8,7 +8,7 @@ pub fn read_sudoku_puzzles(filename: &str) -> Result<Vec<Puzzle>> {
     let mut lines = content.lines();
 
     while let Some(line) = lines.next() {
-        if line.starts_with("Grid") {
+        if line.chars().any(|c| c.is_alphabetic()) {
             let mut grid = [[0u8; 9]; 9];
             let name = line.to_string();
 
