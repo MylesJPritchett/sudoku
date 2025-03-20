@@ -40,8 +40,8 @@ impl Puzzle {
     }
 
     pub fn solve(&mut self) {
-        println!("Solving with Bruteforce");
-        self.board.brute_force();
+        println!("Solving with Hybrid Solve");
+        self.board.solve();
     }
 }
 
