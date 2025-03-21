@@ -34,8 +34,15 @@ pub struct Puzzle {
 pub struct SudokuBoard {
     grid: [[u8; 9]; 9],
     method_counts: HashMap<String, usize>,
-    units: Vec<Vec<(usize, usize)>>,
+    units: Units,
     candidates: Vec<Vec<HashSet<u8>>>,
+}
+
+#[derive(Clone)]
+pub struct Units {
+    row_units: Vec<HashSet<(usize, usize)>>,
+    col_units: Vec<HashSet<(usize, usize)>>,
+    box_units: Vec<HashSet<(usize, usize)>>,
 }
 
 impl Puzzle {
@@ -44,15 +51,14 @@ impl Puzzle {
         self.board.print();
     }
 
-    pub fn solve(&mut self) {
-        println!("Solving with Hybrid Solve");
-        self.board.solve();
+    pub fn solve(&mut self) -> bool {
+        self.board.solve()
     }
 }
 
 impl SudokuBoard {
     fn new() -> SudokuBoard {
-        let units = Self::compute_units();
+        let units: Units = Self::compute_units();
 
         let mut board = Self {
             grid: [[0; 9]; 9], // Initializes an empty board
@@ -106,23 +112,26 @@ impl SudokuBoard {
             .or_insert(0) += 1;
     }
 
-    fn compute_units() -> Vec<Vec<(usize, usize)>> {
-        let mut all_units = vec![vec![]; 81]; // One unit list per cell
+    fn compute_units() -> Units {
+        let mut row_units = vec![HashSet::new(); 81];
+        let mut col_units = vec![HashSet::new(); 81];
+        let mut box_units = vec![HashSet::new(); 81];
+
         for row in 0..9 {
             for col in 0..9 {
-                let mut unit = vec![];
+                let index = row * 9 + col;
 
                 // Row
                 for c in 0..9 {
                     if c != col {
-                        unit.push((row, c));
+                        row_units[index].insert((row, c));
                     }
                 }
 
                 // Column
                 for r in 0..9 {
                     if r != row {
-                        unit.push((r, col));
+                        col_units[index].insert((r, col));
                     }
                 }
 
@@ -134,15 +143,18 @@ impl SudokuBoard {
                         let br = box_row + r;
                         let bc = box_col + c;
                         if br != row || bc != col {
-                            unit.push((br, bc));
+                            box_units[index].insert((br, bc));
                         }
                     }
                 }
-
-                all_units[row * 9 + col] = unit;
             }
         }
-        all_units
+
+        Units {
+            row_units,
+            col_units,
+            box_units,
+        }
     }
 
     fn compute_candidates(&mut self) {
@@ -152,9 +164,20 @@ impl SudokuBoard {
             for col in 0..9 {
                 if self.grid[row][col] == 0 {
                     let mut possible = (1..=9).collect::<HashSet<_>>();
+                    let index = row * 9 + col;
 
-                    // Remove numbers already present in row, column, and box
-                    for &(r, c) in &self.units[row * 9 + col] {
+                    // Remove numbers already present in row
+                    for &(r, c) in &self.units.row_units[index] {
+                        possible.remove(&self.grid[r][c]);
+                    }
+
+                    // Remove numbers already present in column
+                    for &(r, c) in &self.units.col_units[index] {
+                        possible.remove(&self.grid[r][c]);
+                    }
+
+                    // Remove numbers already present in box
+                    for &(r, c) in &self.units.box_units[index] {
                         possible.remove(&self.grid[r][c]);
                     }
 
