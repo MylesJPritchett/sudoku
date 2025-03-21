@@ -1,4 +1,6 @@
 use crate::prelude::*;
+
+use std::collections::HashMap;
 use std::fs;
 
 pub fn read_sudoku_puzzles(filename: &str) -> Result<Vec<Puzzle>> {
@@ -37,7 +39,7 @@ pub fn read_sudoku_puzzles(filename: &str) -> Result<Vec<Puzzle>> {
             }
 
             // Create a SudokuBoard from the grid
-            let board = SudokuBoard { grid };
+            let board = SudokuBoard::from(grid);
 
             // Create a Puzzle with default variation and difficulty
             // These could be inferred or parsed from the name if needed
